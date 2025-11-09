@@ -11,6 +11,5 @@ urlpatterns = [
     path('', home_view, name='home'),
 ]
 
-# ✅ هذا الجزء هو المسؤول عن عرض الصور من مجلد media أثناء التطوير
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
