@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -247,7 +248,7 @@
     <div id="category-{{ category.id }}" class="grid" style="display:none;">
       {% for template in category.templates.all %}
       <div class="card" onclick="selectCert('{{ template.background.url }}')">
-        <img src="{{ template.background.url }}" alt="{{ template.title }}">
+        <img src="{{ template.background.url|default:'' }}" alt="{{ template.title }}">
         <h3>{{ template.title }}</h3>
       </div>
       {% empty %}
