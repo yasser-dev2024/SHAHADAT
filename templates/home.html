@@ -319,16 +319,64 @@ function updateText(target, value) {
 document.getElementById('textColor').oninput = function() {
   document.querySelectorAll('.editable').forEach(el => el.style.color = this.value);
 };
+
 document.getElementById('fontSize').oninput = function() {
   document.querySelectorAll('.editable').forEach(el => el.style.fontSize = this.value + 'px');
 };
+
 document.getElementById('fontFamily').onchange = function() {
   document.querySelectorAll('.editable').forEach(el => el.style.fontFamily = this.value);
 };
 
+/* ✅ تحميل الشعار */
+document.getElementById("logoUploader").addEventListener("change", function(event){
+  const img = document.getElementById("customLogo");
+  img.style.display = "block";
+  img.src = URL.createObjectURL(event.target.files[0]);
+});
+
+/* ✅ تغيير الشفافية */
+document.getElementById("logoOpacity").oninput = function() {
+  document.getElementById("customLogo").style.opacity = this.value;
+};
+
+/* ✅ ✅ ✅ إضافة تحريك النصوص + الشعار بدون حذف أي شيء ✅ ✅ ✅ */
+
+let dragTarget = null;
+let offsetX = 0;
+let offsetY = 0;
+
+function makeDraggable(el) {
+  el.addEventListener("mousedown", function(e) {
+    dragTarget = el;
+    offsetX = e.clientX - el.offsetLeft;
+    offsetY = e.clientY - el.offsetTop;
+    el.style.cursor = "grabbing";
+
+    document.addEventListener("mousemove", dragMove);
+    document.addEventListener("mouseup", dragEnd);
+  });
+}
+
+function dragMove(e) {
+  if (!dragTarget) return;
+  dragTarget.style.left = (e.clientX - offsetX) + "px";
+  dragTarget.style.top = (e.clientY - offsetY) + "px";
+}
+
+function dragEnd() {
+  if (dragTarget) dragTarget.style.cursor = "grab";
+  dragTarget = null;
+  document.removeEventListener("mousemove", dragMove);
+  document.removeEventListener("mouseup", dragEnd);
+}
+
+document.querySelectorAll(".editable").forEach(el => makeDraggable(el));
+makeDraggable(document.getElementById("customLogo"));
+
 /* ✅ رمز الوصول والتحقق عبر واتساب */
 async function requestCode() {
-  const whatsappNumber = "966501894192"; // ضع رقمك هنا بدون +
+  const whatsappNumber = "966501894192"; 
   let code = prompt("🔑 الرجاء إدخال رمز الوصول قبل التنزيل:");
 
   if (!code) {
@@ -347,7 +395,7 @@ async function requestCode() {
       alert(`✅ تم التحقق بنجاح! يمكنك الآن تنزيل الشهادة.\n📄 المتبقي: ${data.remaining} شهادة`);
     } else if (data.reason === 'limit_reached') {
       alert("⚠️ انتهى عدد الشهادات المسموح بها لهذا الرمز. اطلب رمزًا جديدًا عبر واتساب.");
-      window.open(`https://wa.me/${whatsappNumber}?text=رمزي انتهى وأحتاج رمزًا جديدًا للشهادات.`, "_blank");
+      window.open(`https://wa.me/${whatsappNumber}?text=رمزي انتهى وأحتاج رمزًا جديدًا.`, "_blank");
     } else {
       alert("❌ الرمز غير صالح أو غير موجود.");
       window.open(`https://wa.me/${whatsappNumber}?text=الرمز الذي لدي غير صالح، أرجو المساعدة.`, "_blank");
