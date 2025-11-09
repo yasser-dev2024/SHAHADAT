@@ -31,7 +31,6 @@
       letter-spacing: 1px;
     }
 
-    /* 🌸 أزرار المجلدات */
     .category-buttons {
       display: flex;
       flex-wrap: wrap;
@@ -76,7 +75,6 @@
       box-shadow: 0 6px 18px rgba(255, 111, 145, 0.35);
     }
 
-    /* ✨ القوالب */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -235,6 +233,7 @@
 {% include "header.html" %}
 
 <div class="container">
+
   <h2>🌸 قوالب الشهادات المتاحة 🌸</h2>
 
   <div class="category-buttons">
@@ -293,6 +292,7 @@
     <br><br>
     <button onclick="requestCode()">🖨️ طباعة / تنزيل</button>
   </div>
+
 </div>
 
 {% include "footer.html" %}
@@ -328,34 +328,42 @@ document.getElementById('fontFamily').onchange = function() {
   document.querySelectorAll('.editable').forEach(el => el.style.fontFamily = this.value);
 };
 
-/* ✅ تحميل الشعار */
 document.getElementById("logoUploader").addEventListener("change", function(event){
   const img = document.getElementById("customLogo");
   img.style.display = "block";
   img.src = URL.createObjectURL(event.target.files[0]);
 });
 
-/* ✅ تغيير الشفافية */
 document.getElementById("logoOpacity").oninput = function() {
   document.getElementById("customLogo").style.opacity = this.value;
 };
 
-/* ✅ ✅ ✅ إضافة تحريك النصوص + الشعار بدون حذف أي شيء ✅ ✅ ✅ */
-
+/* ✅ حركة الشعار بحرية كاملة + دعم اللمس */
 let dragTarget = null;
 let offsetX = 0;
 let offsetY = 0;
 
 function makeDraggable(el) {
-  el.addEventListener("mousedown", function(e) {
-    dragTarget = el;
-    offsetX = e.clientX - el.offsetLeft;
-    offsetY = e.clientY - el.offsetTop;
-    el.style.cursor = "grabbing";
+  el.addEventListener("mousedown", startDrag);
+  el.addEventListener("touchstart", startDragTouch, { passive: false });
+}
 
-    document.addEventListener("mousemove", dragMove);
-    document.addEventListener("mouseup", dragEnd);
-  });
+function startDrag(e) {
+  dragTarget = e.target;
+  offsetX = e.clientX - dragTarget.offsetLeft;
+  offsetY = e.clientY - dragTarget.offsetTop;
+  document.addEventListener("mousemove", dragMove);
+  document.addEventListener("mouseup", dragEnd);
+}
+
+function startDragTouch(e) {
+  e.preventDefault();
+  dragTarget = e.target;
+  const touch = e.touches[0];
+  offsetX = touch.clientX - dragTarget.offsetLeft;
+  offsetY = touch.clientY - dragTarget.offsetTop;
+  document.addEventListener("touchmove", dragMoveTouch, { passive: false });
+  document.addEventListener("touchend", dragEndTouch);
 }
 
 function dragMove(e) {
@@ -364,17 +372,28 @@ function dragMove(e) {
   dragTarget.style.top = (e.clientY - offsetY) + "px";
 }
 
+function dragMoveTouch(e) {
+  if (!dragTarget) return;
+  const touch = e.touches[0];
+  dragTarget.style.left = (touch.clientX - offsetX) + "px";
+  dragTarget.style.top = (touch.clientY - offsetY) + "px";
+}
+
 function dragEnd() {
-  if (dragTarget) dragTarget.style.cursor = "grab";
   dragTarget = null;
   document.removeEventListener("mousemove", dragMove);
   document.removeEventListener("mouseup", dragEnd);
 }
 
+function dragEndTouch() {
+  dragTarget = null;
+  document.removeEventListener("touchmove", dragMoveTouch);
+  document.removeEventListener("touchend", dragEndTouch);
+}
+
 document.querySelectorAll(".editable").forEach(el => makeDraggable(el));
 makeDraggable(document.getElementById("customLogo"));
 
-/* ✅ رمز الوصول والتحقق عبر واتساب */
 async function requestCode() {
   const whatsappNumber = "966501894192"; 
   let code = prompt("🔑 الرجاء إدخال رمز الوصول قبل التنزيل:");
