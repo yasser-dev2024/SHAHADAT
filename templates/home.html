@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>شهاداتك بين يديك</title>
+  <style>
+    body { margin:0; font-family:'Tahoma',sans-serif; background:#fffafc; }
+    .container { padding:30px; max-width:1200px; margin:auto; }
+    h2 { text-align:center; color:#ff6f91; margin-bottom:30px; font-size:28px; }
+
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:20px;
+    }
+    .card {
+      background:#fff; border-radius:12px; overflow:hidden;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1);
+      transition:transform 0.3s; cursor:pointer;
+    }
+    .card:hover { transform:translateY(-5px); }
+    .card img { width:100%; height:150px; object-fit:cover; }
+    .card h3 { margin:0; padding:15px; text-align:center; font-size:18px; color:#333; }
+
+    .preview {
+      margin:40px auto; max-width:900px; position:relative; display:none; text-align:center;
+    }
+    .preview img { width:100%; border-radius:12px; }
+
+    .editable {
+      position:absolute;
+      cursor:grab;
+      font-family:'Cairo',sans-serif;
+      font-weight:bold;
+      color:#000;
+      user-select:none;
+      text-shadow:0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .lock-badge {
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%) rotate(-30deg);
+      background:rgba(255,0,0,0.35);
+      color:white;
+      font-size:22px;
+      font-weight:bold;
+      padding:18px 40px;
+      border-radius:10px;
+      z-index:20;
+      user-select:none;
+      text-shadow:1px 1px 3px rgba(0,0,0,0.3);
+      pointer-events:none;
+    }
+
+    .form-area { text-align:center; margin:20px; display:none; }
+    .form-area input, .form-area select, .form-area button {
+      margin:6px; padding:8px; border:1px solid #ccc; border-radius:6px;
+    }
+    .form-area button {
+      background:#ff6f91; color:white; font-size:16px; cursor:pointer; transition:0.3s;
+    }
+    .form-area button:hover { background:#ff3b6f; }
+
+    /* 🔹 الشعار القابل للتحريك */
+    #customLogo {
+      position:absolute;
+      top:30px;
+      right:30px;
+      width:120px;
+      opacity:0.9;
+      display:none;
+      z-index:10;
+      cursor:grab;
+      user-select:none;
+      border:none;
+    }
+
+    /* 🔹 مقبض التكبير */
+    #resizeHandle {
+      position:absolute;
+      width:18px;
+      height:18px;
+      bottom:-10px;
+      right:-10px;
+      background:rgba(255,255,255,0.5);
+      border-radius:4px;
+      cursor:se-resize;
+      display:none;
+      z-index:15;
+    }
+  </style>
+</head>
+<body>
+
+{% include "header.html" %}
+
+<div class="container">
+  <h2>🌸 قوالب الشهادات المتاحة 🌸</h2>
+
+  <div style="text-align:center;">
+    {% for category in categories %}
+      <button onclick="toggleCategory('{{ category.id }}')" style="margin:8px; padding:10px 20px; background:#ffe1ec; border:none; border-radius:8px; cursor:pointer; font-size:18px;">📁 {{ category.name }}</button>
+    {% endfor %}
+  </div>
+
+  {% for category in categories %}
+    <div id="category-{{ category.id }}" class="grid" style="display:none; margin-top:25px;">
+      {% for template in category.templates.all %}
+      <div class="card" onclick="selectCert('{{ template.background.url }}')">
+        <img src="{{ template.background.url }}" alt="{{ template.title }}">
+        <h3>{{ template.title }}</h3>
+      </div>
+      {% empty %}
+      <p style="text-align:center;">لا توجد قوالب حالياً في هذا التصنيف 🌷</p>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+  <div id="preview" class="preview">
+    <img id="previewImg" src="" alt="الشهادة المختارة">
+
+    <!-- 🔹 الشعار -->
+    <img id="customLogo" src="">
+    <div id="resizeHandle"></div>
+
+    <div id="studentName" class="editable" style="top:38%;left:25%;">[الاسم]</div>
+    <div id="certificateText" class="editable" style="top:47%;left:15%;width:70%;text-align:center;">[نص الشهادة]</div>
+    <div id="schoolName" class="editable" style="top:65%;left:25%;">[اسم المدرسة أو المنشأة]</div>
+    <div id="positionTitle" class="editable" style="top:78%;left:25%;">[صفة الموقع]</div>
+    <div id="managerName" class="editable" style="top:83%;left:25%;">[اسم الموقع]</div>
+
+    <div id="lockBadge" class="lock-badge">🔒 اطلب الكود الآن لتتمكن من التنزيل</div>
+  </div>
+
+  <div id="formInputs" class="form-area">
+    <input type="text" placeholder="اسم الطالب" oninput="updateText('studentName', this.value)">
+    <input type="text" placeholder="نص الشهادة" oninput="updateText('certificateText', this.value)" style="width:300px;">
+    <input type="text" placeholder="اسم المدرسة أو المنشأة" oninput="updateText('schoolName', this.value)">
+    <input type="text" placeholder="صفة الموقع" oninput="updateText('positionTitle', this.value)">
+    <input type="text" placeholder="اسم الموقع" oninput="updateText('managerName', this.value)">
+    <br>
+    <label>🎨 اللون:</label> <input type="color" id="textColor" value="#000000">
+    <label>🔠 الحجم:</label> <input type="number" id="fontSize" value="22" min="10" max="60">
+    <label>🖋️ الخط:</label>
+    <select id="fontFamily">
+      <option value="Cairo">Cairo</option>
+      <option value="Tahoma">Tahoma</option>
+      <option value="Arial">Arial</option>
+      <option value="Times New Roman">Times New Roman</option>
+      <option value="Amiri">Amiri</option>
+    </select>
+    <br><br>
+
+    <label>🖼️ أضف شعارك:</label>
+    <input type="file" id="logoUploader" accept="image/*">
+    <label>🌫️ الشفافية:</label>
+    <input type="range" id="logoOpacity" min="0.1" max="1" step="0.1" value="0.9">
+    <br><br>
+
+    <button onclick="requestCode()">🖨️ طباعة / تنزيل</button>
+  </div>
+</div>
+
+{% include "footer.html" %}
+
+<script>
+function toggleCategory(id) {
+  document.querySelectorAll('[id^="category-"]').forEach(div => div.style.display = 'none');
+  document.getElementById(`category-${id}`).style.display = 'grid';
+}
+
+function selectCert(imgUrl) {
+  document.getElementById('preview').style.display = 'block';
+  document.getElementById('formInputs').style.display = 'block';
+  document.getElementById('previewImg').src = imgUrl;
+}
+
+function updateText(target, value) {
+  document.getElementById(target).innerText = value || `[${target}]`;
+}
+
+document.getElementById('textColor').oninput = function() {
+  document.querySelectorAll('.editable').forEach(el => el.style.color = this.value);
+};
+document.getElementById('fontSize').oninput = function() {
+  document.querySelectorAll('.editable').forEach(el => el.style.fontSize = this.value + 'px');
+};
+document.getElementById('fontFamily').onchange = function() {
+  document.querySelectorAll('.editable').forEach(el => el.style.fontFamily = this.value);
+};
+
+// 🖼️ التحكم في الشعار
+const logo = document.getElementById('customLogo');
+const handle = document.getElementById('resizeHandle');
+const opacitySlider = document.getElementById('logoOpacity');
+
+document.getElementById('logoUploader').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logo.src = ev.target.result;
+    logo.style.display = 'block';
+    handle.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+opacitySlider.addEventListener('input', e => {
+  logo.style.opacity = e.target.value;
+});
+
+// تحريك الشعار بحرية
+let dragging = false, resizing = false;
+let startX, startY, startLeft, startTop, startWidth;
+
+logo.addEventListener('pointerdown', e => {
+  dragging = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  const rect = logo.getBoundingClientRect();
+  const parentRect = logo.offsetParent.getBoundingClientRect();
+  startLeft = rect.left - parentRect.left;
+  startTop = rect.top - parentRect.top;
+  startWidth = logo.offsetWidth;
+  logo.setPointerCapture(e.pointerId);
+  logo.style.cursor = 'grabbing';
+});
+
+document.addEventListener('pointermove', e => {
+  if (dragging) {
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    logo.style.left = (startLeft + dx) + 'px';
+    logo.style.top = (startTop + dy) + 'px';
+  }
+  if (resizing) {
+    const dx = e.clientX - startX;
+    logo.style.width = (startWidth + dx) + 'px';
+  }
+});
+
+document.addEventListener('pointerup', e => {
+  dragging = false;
+  resizing = false;
+  logo.style.cursor = 'grab';
+  logo.releasePointerCapture?.(e.pointerId);
+});
+
+// ✅ السحب لتكبير من الزاوية
+handle.addEventListener('pointerdown', e => {
+  resizing = true;
+  startX = e.clientX;
+  startWidth = logo.offsetWidth;
+  e.stopPropagation();
+});
+document.addEventListener('pointermove', e => {
+  if (resizing) {
+    const dx = e.clientX - startX;
+    logo.style.width = (startWidth + dx) + 'px';
+  }
+});
+document.addEventListener('pointerup', () => resizing = false);
+
+// ✅ سحب النصوص
+let activeEl = null, startX2 = 0, startY2 = 0, startLeft2 = 0, startTop2 = 0;
+document.addEventListener('pointerdown', e=>{
+  if (!e.target.classList.contains('editable')) return;
+  activeEl = e.target;
+  startX2 = e.clientX; startY2 = e.clientY;
+  const rect = activeEl.getBoundingClientRect();
+  startLeft2 = rect.left - activeEl.offsetParent.getBoundingClientRect().left;
+  startTop2 = rect.top - activeEl.offsetParent.getBoundingClientRect().top;
+  activeEl.setPointerCapture(e.pointerId);
+  activeEl.style.cursor = 'grabbing';
+});
+document.addEventListener('pointermove', e=>{
+  if (!activeEl) return;
+  const dx = e.clientX - startX2, dy = e.clientY - startY2;
+  activeEl.style.left = (startLeft2 + dx) + 'px';
+  activeEl.style.top = (startTop2 + dy) + 'px';
+});
+document.addEventListener('pointerup', e=>{
+  if (activeEl) {
+    activeEl.releasePointerCapture(e.pointerId);
+    activeEl.style.cursor = 'grab';
+    activeEl = null;
+  }
+});
+
+// ✅ التحقق من الكود
+async function requestCode() {
+  let code = prompt("🔑 الرجاء إدخال رمز الوصول قبل التنزيل:");
+  if(!code) return alert("❌ لم يتم إدخال الرمز.");
+  try {
+    const response = await fetch(`/commerce/validate-code/${code}/`);
+    const data = await response.json();
+    if (data.valid) {
+      document.getElementById('lockBadge').style.display = 'none';
+      alert(`✅ تم التحقق بنجاح! يمكنك الآن تنزيل الشهادة.\n🔢 المتبقي: ${data.remaining}`);
+    } else if (data.reason === 'limit_reached') {
+      alert("⚠️ انتهى عدد الشهادات لهذا الرمز.");
+    } else {
+      alert("❌ الرمز غير صالح.");
+    }
+  } catch {
+    alert("⚠️ حدث خطأ في الاتصال.");
+  }
+}
+</script>
+
+</body>
+</html>
