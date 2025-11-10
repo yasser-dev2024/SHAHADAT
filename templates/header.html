@@ -1,138 +1,62 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Cairo', sans-serif;
-      background-color: #fffafc;
-    }
+<!-- ✅ أزرار تسجيل الدخول وإنشاء حساب (متوافقة مع الجوال) -->
+<div class="auth-buttons">
+    <a href="{% url 'login' %}" class="auth-btn login-btn">تسجيل دخول</a>
+    <a href="{% url 'register' %}" class="auth-btn register-btn">إنشاء حساب</a>
+</div>
 
-    /* 🌈 الهيدر بتصميم متموج */
-    .header {
-      position: relative;
-      background: linear-gradient(90deg, #ff6f91 0%, #b86eff 100%);
-      color: white;
-      padding: 15px 40px 60px 40px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      z-index: 10;
-      overflow: hidden;
-    }
-
-    .header::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 80px;
-      background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'><path fill='%23fffafc' fill-opacity='1' d='M0,192L60,186.7C120,181,240,171,360,165.3C480,160,600,160,720,149.3C840,139,960,117,1080,117.3C1200,117,1320,139,1380,149.3L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'></path></svg>");
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: center;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    /* العنوان */
-    .header h1 {
-      margin: 0;
-      font-size: 28px;
-      font-weight: 800;
-      text-shadow: 0 2px 8px rgba(255, 255, 255, 0.25);
-      letter-spacing: 1px;
-      position: relative;
-      z-index: 10;
-    }
-
-    /* شريط الروابط */
-    nav {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      gap: 25px;
-      align-items: center;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      font-size: 18px;
-      font-weight: 600;
-      padding: 8px 16px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    nav a::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.25);
-      transition: all 0.4s ease;
-      transform: skewX(-20deg);
-    }
-
-    nav a:hover::before {
-      left: 100%;
-    }
-
-    nav a:hover {
-      transform: translateY(-2px);
-      color: #fff;
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 2px 10px rgba(255,255,255,0.3);
-    }
-
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      z-index: 10;
-    }
-
-    /* 📱 للجوال */
-    @media (max-width: 768px) {
-      .header {
-        padding: 20px 15px 60px 15px;
-      }
-      .header-content {
-        flex-direction: column;
+<style>
+    .auth-buttons {
+        display: flex;
         gap: 10px;
-        text-align: center;
-      }
-      nav {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px;
-      }
-      nav a {
-        font-size: 15px;
-        padding: 6px 12px;
-      }
-      .header h1 {
-        font-size: 22px;
-      }
+        align-items: center;
     }
-  </style>
-</head>
-<body>
-  <header class="header">
-    <div class="header-content">
-      <h1>شهاداتك بين يديك 🩷</h1>
-      <nav>
-        <a href="{% url 'home' %}" class="active">الرئيسية</a>
-        <a href="#">المتجر</a>
-        <a href="#">تواصل معنا</a>
-      </nav>
-    </div>
-  </header>
-</body>
-</html>
+
+    .auth-btn {
+        padding: 8px 15px;
+        border-radius: 10px;
+        font-size: 15px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.2s ease-in-out;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    /* ✅ زر تسجيل الدخول */
+    .login-btn {
+        background: #ffffff;
+        color: #333;
+        border: 2px solid #4b7bec;
+    }
+
+    .login-btn:hover {
+        background: #4b7bec;
+        color: #fff;
+    }
+
+    /* ✅ زر إنشاء حساب */
+    .register-btn {
+        background: #20bf6b;
+        color: #fff;
+        border: 2px solid #20bf6b;
+    }
+
+    .register-btn:hover {
+        background: #26de81;
+        border-color: #26de81;
+    }
+
+    /* ✅ للجوال — ترتيب نظيف */
+    @media (max-width: 600px) {
+        .auth-buttons {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .auth-btn {
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+    }
+</style>
