@@ -1,62 +1,97 @@
-<!-- ✅ أزرار تسجيل الدخول وإنشاء حساب (متوافقة مع الجوال) -->
-<div class="auth-buttons">
-    <a href="{% url 'login' %}" class="auth-btn login-btn">تسجيل دخول</a>
-    <a href="{% url 'register' %}" class="auth-btn register-btn">إنشاء حساب</a>
-</div>
+{% load static %}
 
-<style>
-    .auth-buttons {
+<header style="
+    position: relative;
+    width: 100%;
+    height: auto;
+    background-color: transparent;
+    overflow: visible;
+    margin: 0;
+    padding: 0;
+">
+
+    <!-- ✅ صورة الخلفية -->
+    <img src="{% static 'target.jpeg' %}" alt="header-bg" style="
+        width: 100%;
+        height: auto;
+        display: block;
+        border-bottom: 3px solid #f2f2f2;
+    ">
+
+    <!-- ✅ الشريط العلوي -->
+    <div style="
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        left: 15px;
         display: flex;
-        gap: 10px;
+        justify-content: space-between;
         align-items: center;
-    }
+        flex-direction: row-reverse;
+    ">
 
-    .auth-btn {
-        padding: 8px 15px;
-        border-radius: 10px;
-        font-size: 15px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: 0.2s ease-in-out;
-        display: inline-block;
-        white-space: nowrap;
-    }
+        <!-- ✅ اليمين (اللوجو) -->
+        <div style="display:flex;align-items:center;gap:10px;">
+            <img src="{% static 'logo.png' %}" alt="logo" style="height:40px;">
+            <span style="font-size:20px;font-weight:bold;color:#fff;text-shadow:0 0 5px #000;">
+                شهاداتك بين يديك
+            </span>
+        </div>
 
-    /* ✅ زر تسجيل الدخول */
-    .login-btn {
-        background: #ffffff;
-        color: #333;
-        border: 2px solid #4b7bec;
-    }
+        <!-- ✅ اليسار (الترحيب / تسجيل دخول / تسجيل خروج) -->
+        <div style="display:flex;align-items:center;gap:15px;">
 
-    .login-btn:hover {
-        background: #4b7bec;
-        color: #fff;
-    }
+            {% if user.is_authenticated %}
+                <!-- ✅ الترحيب -->
+                <span style="
+                    color: #fff;
+                    font-size: 16px;
+                    font-weight: bold;
+                    text-shadow: 0 0 4px #000;
+                ">
+                    مرحباً يا {{ user.username }} 👋
+                </span>
 
-    /* ✅ زر إنشاء حساب */
-    .register-btn {
-        background: #20bf6b;
-        color: #fff;
-        border: 2px solid #20bf6b;
-    }
+                <!-- ✅ زر تسجيل الخروج -->
+                <a href="{% url 'logout' %}" style="
+                    background: #ff4747;
+                    padding: 8px 14px;
+                    border-radius: 10px;
+                    color: #fff;
+                    font-size: 15px;
+                    text-decoration: none;
+                ">
+                    تسجيل خروج
+                </a>
 
-    .register-btn:hover {
-        background: #26de81;
-        border-color: #26de81;
-    }
+            {% else %}
+                <!-- ✅ زر تسجيل دخول -->
+                <a href="{% url 'login' %}" style="
+                    background: #4b7bec;
+                    padding: 8px 14px;
+                    border-radius: 10px;
+                    color: #fff;
+                    font-size: 15px;
+                    text-decoration: none;
+                ">
+                    تسجيل دخول
+                </a>
 
-    /* ✅ للجوال — ترتيب نظيف */
-    @media (max-width: 600px) {
-        .auth-buttons {
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-        }
-        .auth-btn {
-            font-size: 14px;
-            padding: 6px 12px;
-            border-radius: 8px;
-        }
-    }
-</style>
+                <!-- ✅ زر إنشاء حساب -->
+                <a href="{% url 'register' %}" style="
+                    background: #20bf6b;
+                    padding: 8px 14px;
+                    border-radius: 10px;
+                    color: #fff;
+                    font-size: 15px;
+                    text-decoration: none;
+                ">
+                    إنشاء حساب
+                </a>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</header>
