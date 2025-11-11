@@ -181,19 +181,6 @@
       border: none;
     }
 
-    #resizeHandle {
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      bottom: -10px;
-      right: -10px;
-      background: rgba(255, 255, 255, 0.6);
-      border-radius: 4px;
-      cursor: se-resize;
-      display: none;
-      z-index: 15;
-    }
-
     .form-area {
       text-align: center;
       margin: 30px 0;
@@ -221,6 +208,10 @@
     }
 
     .form-area button:hover { background: #ff3b6f; }
+
+    .free-text-block {
+      margin-top: 8px;
+    }
 
     @media (max-width: 768px) {
       h2 { font-size: 24px; }
@@ -258,7 +249,6 @@
   <div id="preview" class="preview">
     <img id="previewImg" src="" alt="الشهادة المختارة">
     <img id="customLogo" src="">
-    <div id="resizeHandle"></div>
     <div id="studentName" class="editable" style="top:38%;left:25%;">[الاسم]</div>
     <div id="certificateText" class="editable" style="top:47%;left:15%;width:70%;text-align:center;">[نص الشهادة]</div>
     <div id="schoolName" class="editable" style="top:65%;left:25%;">[اسم المدرسة أو المنشأة]</div>
@@ -269,7 +259,22 @@
 
   <div id="formInputs" class="form-area">
     <input type="text" placeholder="اسم الطالب" oninput="updateText('studentName', this.value)">
-    <input type="text" placeholder="نص الشهادة" oninput="updateText('certificateText', this.value)" style="width:300px;">
+    <br>
+
+    <label>📝 نصوص جاهزة:</label>
+    <select onchange="updateText('certificateText', this.value)">
+      <option value="">اختر نصاً جاهزاً...</option>
+      <option value="تُمنح هذه الشهادة تقديراً للجهود المتميزة في المجال العلمي.">شكر وتقدير</option>
+      <option value="نمنح هذه الشهادة عرفاناً بجهوده المباركة في سبيل تطوير التعليم.">عرفان وتقدير</option>
+      <option value="تقديراً لإنجازاته وجهوده الدؤوبة في خدمة العلم والمعرفة.">تقدير عام</option>
+    </select>
+
+    <br>
+    <label>✍️ نص حر:</label>
+    <div id="freeTexts"></div>
+    <button type="button" onclick="addFreeText()">➕ إضافة نص حر</button>
+
+    <br><br>
     <input type="text" placeholder="اسم المدرسة أو المنشأة" oninput="updateText('schoolName', this.value)">
     <input type="text" placeholder="صفة الموقع" oninput="updateText('positionTitle', this.value)">
     <input type="text" placeholder="اسم الموقع" oninput="updateText('managerName', this.value)">
@@ -279,10 +284,12 @@
     <label>🖋️ الخط:</label>
     <select id="fontFamily">
       <option value="Cairo">Cairo</option>
-      <option value="Tahoma">Tahoma</option>
-      <option value="Arial">Arial</option>
-      <option value="Times New Roman">Times New Roman</option>
       <option value="Amiri">Amiri</option>
+      <option value="Reem Kufi">Reem Kufi</option>
+      <option value="Tajawal">Tajawal</option>
+      <option value="Changa">Changa</option>
+      <option value="Lalezar">Lalezar</option>
+      <option value="Noto Kufi Arabic">Noto Kufi Arabic</option>
     </select>
     <br><br>
     <label>🖼️ أضف شعارك:</label>
@@ -298,131 +305,28 @@
 {% include "footer.html" %}
 
 <script>
-function toggleCategory(id) {
-  document.querySelectorAll('[id^="category-"]').forEach(div => div.style.display = 'none');
-  document.querySelectorAll('.category-buttons button').forEach(btn => btn.classList.remove('active'));
-  const selected = document.getElementById(`category-${id}`);
-  selected.style.display = 'grid';
-  document.getElementById(`btn-${id}`).classList.add('active');
-}
-
-function selectCert(imgUrl) {
-  document.getElementById('preview').style.display = 'block';
-  document.getElementById('formInputs').style.display = 'block';
-  document.getElementById('previewImg').src = imgUrl;
-}
-
-function updateText(target, value) {
-  document.getElementById(target).innerText = value || `[${target}]`;
-}
-
-document.getElementById('textColor').oninput = function() {
-  document.querySelectorAll('.editable').forEach(el => el.style.color = this.value);
-};
-
-document.getElementById('fontSize').oninput = function() {
-  document.querySelectorAll('.editable').forEach(el => el.style.fontSize = this.value + 'px');
-};
-
-document.getElementById('fontFamily').onchange = function() {
-  document.querySelectorAll('.editable').forEach(el => el.style.fontFamily = this.value);
-};
-
-document.getElementById("logoUploader").addEventListener("change", function(event){
-  const img = document.getElementById("customLogo");
-  img.style.display = "block";
-  img.src = URL.createObjectURL(event.target.files[0]);
-});
-
-document.getElementById("logoOpacity").oninput = function() {
-  document.getElementById("customLogo").style.opacity = this.value;
-};
-
-/* ✅ حركة الشعار بحرية كاملة + دعم اللمس */
-let dragTarget = null;
-let offsetX = 0;
-let offsetY = 0;
-
-function makeDraggable(el) {
-  el.addEventListener("mousedown", startDrag);
-  el.addEventListener("touchstart", startDragTouch, { passive: false });
-}
-
-function startDrag(e) {
-  dragTarget = e.target;
-  offsetX = e.clientX - dragTarget.offsetLeft;
-  offsetY = e.clientY - dragTarget.offsetTop;
-  document.addEventListener("mousemove", dragMove);
-  document.addEventListener("mouseup", dragEnd);
-}
-
-function startDragTouch(e) {
-  e.preventDefault();
-  dragTarget = e.target;
-  const touch = e.touches[0];
-  offsetX = touch.clientX - dragTarget.offsetLeft;
-  offsetY = touch.clientY - dragTarget.offsetTop;
-  document.addEventListener("touchmove", dragMoveTouch, { passive: false });
-  document.addEventListener("touchend", dragEndTouch);
-}
-
-function dragMove(e) {
-  if (!dragTarget) return;
-  dragTarget.style.left = (e.clientX - offsetX) + "px";
-  dragTarget.style.top = (e.clientY - offsetY) + "px";
-}
-
-function dragMoveTouch(e) {
-  if (!dragTarget) return;
-  const touch = e.touches[0];
-  dragTarget.style.left = (touch.clientX - offsetX) + "px";
-  dragTarget.style.top = (touch.clientY - offsetY) + "px";
-}
-
-function dragEnd() {
-  dragTarget = null;
-  document.removeEventListener("mousemove", dragMove);
-  document.removeEventListener("mouseup", dragEnd);
-}
-
-function dragEndTouch() {
-  dragTarget = null;
-  document.removeEventListener("touchmove", dragMoveTouch);
-  document.removeEventListener("touchend", dragEndTouch);
-}
-
-document.querySelectorAll(".editable").forEach(el => makeDraggable(el));
+function toggleCategory(id){document.querySelectorAll('[id^="category-"]').forEach(div=>div.style.display='none');document.querySelectorAll('.category-buttons button').forEach(btn=>btn.classList.remove('active'));const selected=document.getElementById(`category-${id}`);selected.style.display='grid';document.getElementById(`btn-${id}`).classList.add('active');}
+function selectCert(imgUrl){document.getElementById('preview').style.display='block';document.getElementById('formInputs').style.display='block';document.getElementById('previewImg').src=imgUrl;}
+function updateText(target,value){document.getElementById(target).innerText=value||`[${target}]`;}
+function addFreeText(){const id="freeText_"+Date.now();const div=document.createElement("div");div.classList.add("free-text-block");div.innerHTML=`<input type="text" placeholder="نص حر" oninput="updateFreeText('${id}', this.value)" style="width:250px;"> <button onclick="removeFreeText(this)">❌</button>`;document.getElementById("freeTexts").appendChild(div);const span=document.createElement("div");span.id=id;span.classList.add("editable");span.innerText="[نص حر]";span.style.top="55%";span.style.left="20%";document.getElementById("preview").appendChild(span);makeDraggable(span);}
+function removeFreeText(btn){const parent=btn.parentElement;const input=parent.querySelector("input");const id=input.getAttribute("oninput").match(/'([^']+)'/)[1];document.getElementById(id).remove();parent.remove();}
+function updateFreeText(id,value){document.getElementById(id).innerText=value||"[نص حر]";}
+document.getElementById('textColor').oninput=function(){document.querySelectorAll('.editable').forEach(el=>el.style.color=this.value);};
+document.getElementById('fontSize').oninput=function(){document.querySelectorAll('.editable').forEach(el=>el.style.fontSize=this.value+'px');};
+document.getElementById('fontFamily').onchange=function(){document.querySelectorAll('.editable').forEach(el=>el.style.fontFamily=this.value);};
+document.getElementById("logoUploader").addEventListener("change",function(e){const img=document.getElementById("customLogo");img.style.display="block";img.src=URL.createObjectURL(e.target.files[0]);});
+document.getElementById("logoOpacity").oninput=function(){document.getElementById("customLogo").style.opacity=this.value;};
+let dragTarget=null,offsetX=0,offsetY=0;
+function makeDraggable(el){el.addEventListener("mousedown",startDrag);el.addEventListener("touchstart",startDragTouch,{passive:false});}
+function startDrag(e){dragTarget=e.target;offsetX=e.clientX-dragTarget.offsetLeft;offsetY=e.clientY-dragTarget.offsetTop;document.addEventListener("mousemove",dragMove);document.addEventListener("mouseup",dragEnd);}
+function startDragTouch(e){e.preventDefault();dragTarget=e.target;const t=e.touches[0];offsetX=t.clientX-dragTarget.offsetLeft;offsetY=t.clientY-dragTarget.offsetTop;document.addEventListener("touchmove",dragMoveTouch,{passive:false});document.addEventListener("touchend",dragEndTouch);}
+function dragMove(e){if(!dragTarget)return;dragTarget.style.left=(e.clientX-offsetX)+"px";dragTarget.style.top=(e.clientY-offsetY)+"px";}
+function dragMoveTouch(e){if(!dragTarget)return;const t=e.touches[0];dragTarget.style.left=(t.clientX-offsetX)+"px";dragTarget.style.top=(t.clientY-offsetY)+"px";}
+function dragEnd(){dragTarget=null;document.removeEventListener("mousemove",dragMove);document.removeEventListener("mouseup",dragEnd);}
+function dragEndTouch(){dragTarget=null;document.removeEventListener("touchmove",dragMoveTouch);document.removeEventListener("touchend",dragEndTouch);}
+document.querySelectorAll(".editable").forEach(el=>makeDraggable(el));
 makeDraggable(document.getElementById("customLogo"));
-
-async function requestCode() {
-  const whatsappNumber = "966501894192"; 
-  let code = prompt("🔑 الرجاء إدخال رمز الوصول قبل التنزيل:");
-
-  if (!code) {
-    if (confirm("⚠️ لم يتم إدخال الرمز.\nهل ترغب بالتواصل عبر واتساب لطلب الرمز؟")) {
-      window.open(`https://wa.me/${whatsappNumber}?text=مرحباً، أريد رمز الدخول للشهادات.`, "_blank");
-    }
-    return;
-  }
-
-  try {
-    const response = await fetch(`/commerce/validate-code/${code}/`);
-    const data = await response.json();
-
-    if (data.valid) {
-      document.getElementById('lockBadge').style.display = 'none';
-      alert(`✅ تم التحقق بنجاح! يمكنك الآن تنزيل الشهادة.\n📄 المتبقي: ${data.remaining} شهادة`);
-    } else if (data.reason === 'limit_reached') {
-      alert("⚠️ انتهى عدد الشهادات المسموح بها لهذا الرمز. اطلب رمزًا جديدًا عبر واتساب.");
-      window.open(`https://wa.me/${whatsappNumber}?text=رمزي انتهى وأحتاج رمزًا جديدًا.`, "_blank");
-    } else {
-      alert("❌ الرمز غير صالح أو غير موجود.");
-      window.open(`https://wa.me/${whatsappNumber}?text=الرمز الذي لدي غير صالح، أرجو المساعدة.`, "_blank");
-    }
-  } catch {
-    alert("⚠️ حدث خطأ أثناء الاتصال بالخادم.");
-  }
-}
+async function requestCode(){const whatsappNumber="966501894192";let code=prompt("🔑 الرجاء إدخال رمز الوصول قبل التنزيل:");if(!code){if(confirm("⚠️ لم يتم إدخال الرمز.\nهل ترغب بالتواصل عبر واتساب لطلب الرمز؟")){window.open(`https://wa.me/${whatsappNumber}?text=مرحباً، أريد رمز الدخول للشهادات.`,"_blank");}return;}try{const response=await fetch(`/commerce/validate-code/${code}/`);const data=await response.json();if(data.valid){document.getElementById('lockBadge').style.display='none';alert(`✅ تم التحقق بنجاح! يمكنك الآن تنزيل الشهادة.\n📄 المتبقي: ${data.remaining} شهادة`);}else if(data.reason==='limit_reached'){alert("⚠️ انتهى عدد الشهادات المسموح بها لهذا الرمز.");window.open(`https://wa.me/${whatsappNumber}?text=رمزي انتهى وأحتاج رمزًا جديدًا.`,"_blank");}else{alert("❌ الرمز غير صالح أو غير موجود.");window.open(`https://wa.me/${whatsappNumber}?text=الرمز الذي لدي غير صالح، أرجو المساعدة.`,"_blank");}}catch{alert("⚠️ حدث خطأ أثناء الاتصال بالخادم.");}}
 </script>
 
 </body>
